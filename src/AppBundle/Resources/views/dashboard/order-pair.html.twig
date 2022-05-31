@@ -1,0 +1,31 @@
+{% for orderPair in orderPairs %}
+    <tr>
+        <td>{{ orderPair.buyOrderExchange | capitalize }}</td>
+        <td>{{ orderPair.buyOrderCreated | date('d/m/y H:i:s') }}</td>
+        <td><i class="fa fa-btc"></i> {{ orderPair.buyOrderAmountBtc | number_format(8, '.', ',') }}</td>
+        <td><i class="fa fa-dollar"></i> {{ orderPair.buyOrderPrice | number_format(2, '.', ',') }}</td>
+        <td><i class="fa fa-dollar"></i> {{ orderPair.buyOrderAmountUsd | number_format(2, '.', ',') }}</td>
+        <td class="table-border">
+            {% if orderPair.buyOrderOpen %}
+                <span class="label label-success lb-sm">Yes</span>
+            {% else %}
+                <span class="label label-danger lb-sm">No</span>
+            {% endif %}
+        </td>
+        <td>{{ orderPair.sellOrderExchange | capitalize }}</td>
+        <td>{{ orderPair.sellOrderCreated | date('d/m/y H:i:s') }}</td>
+        <td><i class="fa fa-btc"></i> {{ orderPair.sellOrderAmountBtc | number_format(8, '.', ',') }}</td>
+        <td><i class="fa fa-dollar"></i> {{ orderPair.sellOrderPrice | number_format(2, '.', ',') }}</td>
+        <td><i class="fa fa-dollar"></i> {{ orderPair.sellOrderAmountUsd | number_format(2, '.', ',') }}</td>
+        <td class="table-border">
+            {% if orderPair.sellOrderOpen %}
+                <span class="label label-success lb-sm">Yes</span>
+            {% else %}
+                <span class="label label-danger lb-sm">No</span>
+            {% endif %}
+        </td>
+        <td>
+            <i class="fa fa-dollar"></i> {{ (orderPair.sellOrderAmountUsd - orderPair.buyOrderAmountUsd) | number_format(2, '.', ',') }}
+        </td>
+    </tr>
+{% endfor %}

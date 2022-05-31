@@ -1,0 +1,239 @@
+{% extends '@App/base.html.twig' %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ asset('build/css/dashboard.min.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Bot Parameters <small><span id="trading-since">Trading start time: {{ status.startDate | date('d/m/Y h:i:s') }}</span></small></h3>
+                </div>
+
+                <div class="box-body">
+                    <form id="trading-form">
+                        <div class="form-group settings-group">
+                            <div class="row">
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="threshold-usd">Threshold <i class="fa fa-dollar"></i></label>
+                                        <div class="input-group">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-danger" id="decrease-threshold-usd">
+                                                    <span class="glyphicon glyphicon-minus"></span>
+                                                </button>
+                                            </div>
+                                            <input type="text" class="form-control" id="threshold-usd" required="required" value="{{ status.thresholdUsd  }}">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-success" id="increase-threshold-usd">
+                                                    <span class="glyphicon glyphicon-plus"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small>If the difference in USD between two exchanges is bigger than this value, a trade is placed in both exchanges.</small>
+                                    </div>
+
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="order-value-btc">Order value <i class="fa fa-btc"></i></label>
+                                        <div class="input-group">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-danger" id="decrease-order-value-btc">
+                                                    <span class="glyphicon glyphicon-minus"></span>
+                                                </button>
+                                            </div>
+                                            <input type="text" class="form-control" id="order-value-btc" required="required" value="{{ status.orderValueBtc  }}">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-success" id="increase-order-value-btc">
+                                                    <span class="glyphicon glyphicon-plus"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small>When an order is placed, this is the value in BTC for both, the buy and sell orders.</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="add-or-sub-to-order-usd">Add or substract to order <i class="fa fa-dollar"></i></label>
+                                        <div class="input-group">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-danger" id="decrease-add-or-sub-to-order-usd">
+                                                    <span class="glyphicon glyphicon-minus"></span>
+                                                </button>
+                                            </div>
+                                            <input type="text" class="form-control" id="add-or-sub-to-order-usd" required="required" value="{{ status.addOrSubToOrderUsd  }}">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn btn-success" id="increase-add-or-sub-to-order-usd">
+                                                    <span class="glyphicon glyphicon-plus"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <small>This is the USD amount added or subtracted to buy or sell order limit price to ensure the order is executed quickly.</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="max-open-orders">Max open orders</label>
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-line-chart"></i></span>
+                                            <input type="number" min="1" step="1" class="form-control" id="max-open-orders" value="{{ status.maxOpenOrders  }}" {{ status.running ? 'disabled' : '' }}>
+                                        </div>
+
+                                        <small>This is the maximum amount of order pairs the system will keep open at any moment. Leave empty for infinite open order pairs.</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label for="trading-time-minutes">Trading time (Minutes)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-clock-o"></i></span>
+                                            <input type="number" min="1" step="1" class="form-control" id="trading-time-minutes" value="{{ status.tradingTimeMinutes }}" {{ status.running ? 'disabled' : '' }}>
+                                        </div>
+
+                                        <small>Minutes the bot is trading. Leave this field empty for infinite time.</small>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="box-footer">
+                    <button id="start-btn" class="btn {{ status.running ? 'btn-default' : 'btn-primary' }}"><i class="fa fa-play"></i> Start Automate Trading</button>
+                    <button id="stop-btn" class="btn {{ status.running ? 'btn-danger' : 'btn-default' }}"><i class="fa fa-stop"></i> Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="box box-warning">
+                <div class="box-header">
+                    <h3 class="box-title">Balances</h3>
+                    <small><span id="balance-date"></span></small>
+                    <button id="refresh-balance-btn" class="btn btn-xs btn-default pull-right" title="Refresh"><i class="fa fa-refresh" id="refresh-icon"></i></button>
+                </div>
+                <div class="box-body no-padding">
+                    <table class="table table-striped">
+                        <tr>
+                            <th class="table-border">Exchange</th>
+                            <th>Current <i class="fa fa-dollar"></i></th>
+                            <th>Current <i class="fa fa-btc"></i></th>
+                        </tr>
+                        <tbody id="balance-table">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="box box-success">
+                <div class="box-header">
+                    <h3 class="box-title">Ticker</h3>
+                    <small><span id="ticker-date"></span></small>
+                </div>
+                <div class="box-body no-padding">
+                    <table class="table table-striped">
+                        <tr>
+                            <th class="table-border">Exchange</th>
+                            <th>Ask <i class="fa fa-dollar"></i></th>
+                            <th>Bid <i class="fa fa-dollar"></i></th>
+                        </tr>
+                        <tbody id="ticker-table">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="box box-danger">
+                <div class="box-header">
+                    <h3 class="box-title">Differences</h3>
+                    <small><span id="difference-date"></span></small>
+                </div>
+                <div class="box-body no-padding">
+                    <table class="table table-striped">
+                        <tr>
+                            <th class="table-border">Exchange Sell</th>
+                            <th class="table-border">Exchange Buy</th>
+                            <th>Ask <i class="fa fa-dollar"></i></th>
+                            <th class="table-border">Bid <i class="fa fa-dollar"></i></th>
+                            <th>Difference <i class="fa fa-dollar"></i></th>
+                            <th>Trade</th>
+                        </tr>
+                        <tbody id="difference-table">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-info">
+                <div class="box-header">
+                    <h3 class="box-title">Order Pairs</h3>
+                    <small><span id="order-pair-date"></span></small>
+                </div>
+                <div class="box-body no-padding">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Exchange Buy</th>
+                            <th>Buy Order Time</th>
+                            <th>Btc Buy</th>
+                            <th>Price</th>
+                            <th>Usd paid</th>
+                            <th>Open</th>
+                            <th>Exchange Sell</th>
+                            <th>Sell Order Time</th>
+                            <th>Btc Sell</th>
+                            <th>Price</th>
+                            <th>Usd received</th>
+                            <th>Open</th>
+                            <th>Estimated Profit</th>
+                        </tr>
+                        <tbody id="order-pair-table">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal modal-danger fade" id="order-placed-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="order-placed-modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <p><span id="order-placed-modal-text"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        var running = {{ status.running == true ? 'true' : 'false' }};
+        var interval = {{ interval }};
+    </script>
+    <script src="{{ asset('build/js/dashboard.min.js') }}"></script>
+{% endblock %}

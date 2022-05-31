@@ -1,0 +1,12 @@
+{% for ticker in tickers %}
+    <tr>
+
+        <td class="table-border">{{ ticker.name | capitalize }}</td>
+        <td>
+            {{ ticker.ask | number_format(2, '.', ',') }}
+        </td>
+        <td>
+            {{ ticker.bid | number_format(2, '.', ',') }}
+        </td>
+    </tr>
+{% endfor %}

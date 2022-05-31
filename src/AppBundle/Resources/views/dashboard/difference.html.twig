@@ -1,0 +1,36 @@
+{% for difference in differences %}
+    <tr>
+        <td class="table-border">
+            {{ difference.exchangeSellName | capitalize }}
+        </td>
+        <td class="table-border">
+            {{ difference.exchangeBuyName | capitalize }}
+        </td>
+        <td>
+            {{ difference.ask | number_format(2, '.', ',') }}
+        </td>
+        <td class="table-border">
+            {{ difference.bid | number_format(2, '.', ',') }}
+        </td>
+        <td>
+            {% if difference.difference >= thresholdUsd %}
+                <span class="text-success"><strong>{{ difference.difference | number_format(2, '.', ',') }}</strong></span>
+            {% else %}
+                <span class="text-default"><strong>{{ difference.difference | number_format(2, '.', ',') }}</strong></span>
+            {% endif %}
+        </td>
+        <td>
+            {% if status.running %}
+                <button data-difference-id="{{ difference.id }}" class="btn btn-sm btn-default place-order-btn" disabled title="Place order pair"><i class="fa fa-play"></i></button>
+            {% else %}
+                {% if ((btcBalances[difference.exchangeSellName]) | number_format(8, '.', ',')) < status.orderValueBtc %}
+                    <button data-difference-id="{{ difference.id }}" class="btn btn-sm btn-warning place-order-btn" title="Not enough btc balance to place order pair"><i class="fa fa-play"></i></button>
+                {% elseif usdBalances[difference.exchangeBuyName] < (status.orderValueBtc * (difference.ask + status.addOrSubToOrderUsd)) %}
+                    <button data-difference-id="{{ difference.id }}" class="btn btn-sm btn-warning place-order-btn" title="Not enough usd balance to place order pair"><i class="fa fa-play"></i></button>
+                {% else %}
+                    <button data-difference-id="{{ difference.id }}" class="btn btn-sm btn-success place-order-btn" title="Place order pair"><i class="fa fa-play"></i></button>
+                {% endif %}
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
